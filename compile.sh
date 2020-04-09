@@ -57,6 +57,9 @@ Other:
 
   ${YELLOW}--gcc${NC}                             \t use gcc as compiler (optional: specify version)
   ${YELLOW}--pgi${NC}                             \t use pgcc ac compiler (optional: specify version)
+
+  ${YELLOW}-t${NC}
+  ${YELLOW}--tests${NC}                           \t also prduces a executable for all unit tests
 "
 
 HELP="$DESCRIPTION$OPTIONS"
@@ -138,6 +141,10 @@ do
       ;;
     --sp|--serial_profile|--artss_serial_profile)
       COMPILE="$COMPILE artss_serial_profile"
+      shift
+      ;;
+    -t|--tests)
+      COMPILE="$COMPILE runUnitTests"
       shift
       ;;
     --jureca)
