@@ -306,7 +306,6 @@ if(NOT TARGET spdlog) # use local fallback
 endif()
 
 
-
 #Targets
 add_executable( artss_serial ${SOURCE_FILES} src/main.cpp)
 target_link_libraries(artss_serial PRIVATE spdlog::spdlog)
@@ -342,6 +341,19 @@ spdlog_enable_warnings(artss_gpu)
 spdlog_enable_warnings(artss_gpu_profile)
 
 enable_testing()
+option(UNIT_TESTS "Build the tests" ON)
+add_subdirectory(./external/googletest)
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+set(TEST_SRC_FILES
+    "./gtests/utility/Utility.cpp"
+    )
+add_executable(runUnitTests ${TEST_SRC_FILES} ${SOURCE_FILES})
+target_include_directories(runUnitTests PUBLIC ./)
+target_link_libraries(runUnitTests PUBLIC gtest gtest_main)
+target_link_libraries(runUnitTests PRIVATE spdlog::spdlog)
+add_test(UnitTests runUnitTests)
+
+
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION ${CMAKE_BINARY_DIR} )
 
 add_test( NAME AdvectionTest COMMAND sh ./run.sh ${CMAKE_BINARY_DIR}/${EXECUTABLE_OUTPUT_PATH}/artss_serial
