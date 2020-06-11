@@ -79,7 +79,14 @@ endif()
 
 # Initialize CXXFLAGS.
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} -std=c++17")
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  add_compile_options(-Wno-unused-parameter)
+  add_compile_options(-Wno-unused-variable)
+  add_compile_options(-Wno-unknown-pragmas)
+  add_compile_options(-Wno-cpp)
+  add_compile_options(-Wno-shadow)
+
   set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG} ${warning_flags} -O0 -g -Wunused-variable -Wunused-parameter -Wunused-function -Wshadow -Wunused -DTRACE_LOGGING")
   set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} -O3 -w -DNDEBUG")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "PGI" OR CMAKE_C_COMPILER_ID STREQUAL "PGI")
@@ -87,6 +94,12 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "PGI" OR CMAKE_C_COMPILER_ID STREQUAL "PGI
   set(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
   set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fast -w -DNDEBUG")
 endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "PGI")
+  set(CMAKE_CXX11_STANDARD_COMPILE_OPTION  --c++11)
+  set(CMAKE_CXX14_STANDARD_COMPILE_OPTION  --c++14)
+  set(CMAKE_CXX17_STANDARD_COMPILE_OPTION  --c++17)
+ endif()
 
 #--------------------
 if(NOT CMAKE_GENERATOR MATCHES "Xcode|Visual Studio")
@@ -292,6 +305,8 @@ if(NOT TARGET spdlog) # use local fallback
     add_subdirectory(external/spdlog)
 endif()
 
+
+
 #Targets
 add_executable( artss_serial ${SOURCE_FILES} src/main.cpp)
 target_link_libraries(artss_serial PRIVATE spdlog::spdlog)
@@ -319,7 +334,6 @@ set_target_properties(artss_gpu_profile PROPERTIES COMPILE_FLAGS "-acc -Minfo=ac
 target_link_libraries(artss_gpu_profile)
 target_link_libraries(artss_gpu_profile PRIVATE spdlog::spdlog)
 
-
 spdlog_enable_warnings(artss_serial)
 spdlog_enable_warnings(artss_serial_profile)
 spdlog_enable_warnings(artss_multicore_cpu)
@@ -327,21 +341,7 @@ spdlog_enable_warnings(artss_multicore_cpu_profile)
 spdlog_enable_warnings(artss_gpu)
 spdlog_enable_warnings(artss_gpu_profile)
 
-
 enable_testing()
-option(UNIT_TESTS "Build the tests" ON)
-add_subdirectory(./external/googletest)
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-set(TEST_SRC_FILES
-    "./gtests/utility/Utility.cpp"
-    )
-add_executable(runUnitTests ${TEST_SRC_FILES} ${SOURCE_FILES})
-target_include_directories(runUnitTests PUBLIC ./)
-target_link_libraries(runUnitTests PUBLIC gtest gtest_main)
-target_link_libraries(runUnitTests PRIVATE spdlog::spdlog)
-add_test(UnitTests runUnitTests)
-
-
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests DESTINATION ${CMAKE_BINARY_DIR} )
 
 add_test( NAME AdvectionTest COMMAND sh ./run.sh ${CMAKE_BINARY_DIR}/${EXECUTABLE_OUTPUT_PATH}/artss_serial

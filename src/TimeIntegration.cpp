@@ -6,8 +6,6 @@
 
 #include <chrono>
 #include <vector>
-#include <iostream>
-#include <spdlog/spdlog.h>
 
 #include "TimeIntegration.h"
 #include "utility/Parameters.h"
@@ -17,6 +15,7 @@
 
 #ifndef PROFILING
 #include "utility/Visual.h"
+#include "utility/Utility.h"
 #endif
 
 // ==================================== Constructor ====================================
@@ -26,6 +25,9 @@
 /// \param  fname	filename of xml-input (via argument)
 // ***************************************************************************************
 TimeIntegration::TimeIntegration(SolverI *isolv, const char *fname) {
+#ifndef PROFILING
+    m_logger = Utility::createLogger(typeid(this).name());
+#endif
 	auto params = Parameters::getInstance();
 	auto domain = Domain::getInstance();
 
@@ -43,9 +45,9 @@ TimeIntegration::TimeIntegration(SolverI *isolv, const char *fname) {
 void TimeIntegration::run(){
 	Field** vector_fields;
 	Adaption* adaption;
-    spdlog::info("Start calculating and timing...");
+    m_logger->info("Start calculating and timing...");
 
-	std::chrono::time_point<std::chrono::system_clock> start, end;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
 
   Analysis ana;
@@ -169,7 +171,7 @@ void TimeIntegration::run(){
 
 		//iter_start = std::chrono::system_clock::now();
 #ifndef PROFILING
-        spdlog::info("t_cur={}", t_cur);
+        m_logger->info("t_cur = {:.5f}", t_cur);
 #endif
 
 		// Calculate
@@ -238,12 +240,12 @@ void TimeIntegration::run(){
 
 } //end RANGE
 
-    spdlog::info("Done calculating and timing ...");
+    m_logger->info("Done calculating and timing ...");
 
     // stop timer
     end = std::chrono::system_clock::now();
     long ms = std::chrono::duration_cast < std::chrono::milliseconds > (end - start).count();
-    spdlog::info("Global Time: {}ms", ms);
+    m_logger->info("Global Time: {}ms", ms);
 
     if (adaption->isDataExtractionEndresultEnabled()) {
         adaption->extractData(adaption->getEndresultName());

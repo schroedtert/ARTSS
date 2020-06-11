@@ -27,14 +27,7 @@ Parameters *Parameters::getInstance() {
 /// \param	filename		string (name of xml-file)
 // ***************************************************************************************
 void Parameters::parse(const std::string& filename) {
-    if (filename.empty()) {
-        spdlog::error("no XML file specified, skip reading parameter");
-        return;
-    } else {
-        spdlog::info("read in XML file: ");
-    }
-
-    tinyxml2::XMLError eResult = this->doc->LoadFile(filename.c_str());
+    this->doc->LoadFile(filename.c_str());
 }
 
 // ======================================== Getter =======================================

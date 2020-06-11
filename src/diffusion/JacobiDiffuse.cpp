@@ -6,16 +6,17 @@
 /// \copyright 	<2015-2020> Forschungszentrum Juelich GmbH. All rights reserved.
 
 #include <cmath>
-#include <iostream>
-#include <spdlog/spdlog.h>
 
 #include "JacobiDiffuse.h"
 #include "../utility/Parameters.h"
 #include "../boundary/BoundaryController.h"
 #include "../Domain.h"
+#include "../utility/Utility.h"
 
 JacobiDiffuse::JacobiDiffuse() {
-
+#ifndef PROFILING
+    m_logger = Utility::createLogger(typeid(this).name());
+#endif
     auto params = Parameters::getInstance();
 
     m_dt = params->getReal("physical_parameters/dt");
@@ -134,8 +135,8 @@ void JacobiDiffuse::diffuse(Field *out, Field *in, const Field *b, const real D,
         }
 
 #ifndef PROFILING
-        spdlog::info("Number of iterations: {}", it);
-        spdlog::info("Jacobi ||res||=", res);
+        m_logger->info("Number of iterations: {}", it);
+        m_logger->info("Jacobi ||res|| = {:.5e}", res);
 #endif
 
     }//end data region
@@ -251,8 +252,8 @@ void JacobiDiffuse::diffuse(Field *out, Field *in, const Field *b, const real D,
 #pragma acc wait
         }
 #ifndef PROFILING
-        spdlog::info("Number of iterations: {}", it);
-        spdlog::info("Jacobi ||res||={}", res);
+        m_logger->info("Number of iterations: {}", it);
+        m_logger->info("Jacobi ||res|| = {.5e}", res);
 #endif
     }//end data region
 }

@@ -4,17 +4,18 @@
 /// \author 	Severt
 /// \copyright 	<2015-2020> Forschungszentrum Juelich GmbH. All rights reserved.
 
-#include <iostream>
 #include <spdlog/spdlog.h>
 
 #include "AdvectionDiffusionSolver.h"
-#include "../interfaces/AdvectionI.h"
 #include "../utility/Parameters.h"
 #include "../Domain.h"
 #include "SolverSelection.h"
+#include "../utility/Utility.h"
 
 AdvectionDiffusionSolver::AdvectionDiffusionSolver() {
-
+#ifndef PROFILING
+    m_logger = Utility::createLogger(typeid(this).name());
+#endif
     auto params = Parameters::getInstance();
     std::string advectionType = params->get("solver/advection/type");
     SolverSelection::SetAdvectionSolver(&this->adv, advectionType);

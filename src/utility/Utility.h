@@ -9,25 +9,32 @@
 
 #include <string>
 #include <vector>
-#include <cstring>
-#include <sstream>
-#include <iterator>
 
-#include "Utility.h"
-#include "GlobalMacrosTypes.h"
+#include "spdlog/logger.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 class Utility {
  public:
     static std::vector<size_t> coordinateFromLinearIndex(size_t idx,
                                                          size_t Nx,
                                                          size_t Ny);
-    static std::vector<std::string> split(const char* text,
-                                          char delimiter);
+//  static size_t getCoordinateI(size_t idx,
+//                               size_t Nx,
+//                               size_t Ny,
+//                               size_t j,
+//                               size_t k);
+//  static size_t getCoordinateJ(size_t idx, size_t Nx, size_t Ny, size_t k);
+//  static size_t getCoordinateK(size_t idx, size_t Nx, size_t Ny);
+    static std::vector<std::string> split(const char* text, char delimiter);
     static std::vector<std::string> split(const std::string& text,
                                           char delimiter);
+
+    static std::shared_ptr<spdlog::logger> createLogger(std::string loggerName);
+
  private:
     Utility() = default;
 };
 
 
-#endif // ARTSS_UTILITY_UTILITY_H_
+#endif /* ARTSS_UTILITY_UTILITY_H_ */

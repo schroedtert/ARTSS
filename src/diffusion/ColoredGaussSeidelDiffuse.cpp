@@ -6,18 +6,21 @@
 /// \copyright    <2015-2018> Forschungszentrum Juelich GmbH. All rights reserved.
 
 #include <cmath>
-#include <iostream>
+#ifndef PROFILING
 #include <spdlog/spdlog.h>
-
+#endif
 
 #include "ColoredGaussSeidelDiffuse.h"
 #include "../boundary/BoundaryController.h"
 #include "../utility/Parameters.h"
 #include "../Domain.h"
+#include "../utility/Utility.h"
 
 //=============================== Constructor ======================================
 ColoredGaussSeidelDiffuse::ColoredGaussSeidelDiffuse() {
-
+#ifndef PROFILING
+    m_logger = Utility::createLogger(typeid(this).name());
+#endif
     auto params = Parameters::getInstance();
 
     m_dt = params->getReal("physical_parameters/dt");
@@ -32,7 +35,7 @@ ColoredGaussSeidelDiffuse::ColoredGaussSeidelDiffuse() {
         m_max_iter = 10000;
         m_tol_res = 1e-16;
     }
-};
+}
 
 //==================================== Diffuse ===========================================
 // ***************************************************************************************
@@ -121,11 +124,11 @@ void ColoredGaussSeidelDiffuse::diffuse(Field *out, Field *in, const Field *b, c
     }
 
 #ifndef PROFILING
-    spdlog::info("Number of iterations: {}", it);
-    spdlog::info("Colored Gauss-Seidel ||res||={}", res);
+    m_logger->info("Number of iterations: {}", it);
+    m_logger->info("Colored Gauss-Seidel ||res|| = {:.5e}", res);
 #endif
 } //end data region
-};
+}
 
 //=============================== Turbulent version ======================================
 // ***************************************************************************************
@@ -217,11 +220,11 @@ void ColoredGaussSeidelDiffuse::diffuse(Field *out, Field *in, const Field *b, c
     }
 
 #ifndef PROFILING
-    spdlog::info("Number of iterations: {}", it);
-    spdlog::info("Colored Gauss-Seidel ||res||={}", res);
+    m_logger->info("Number of iterations: {}", it);
+    m_logger->info("Colored Gauss-Seidel ||res|| = {.5e}", res);
 #endif
 } //end data region
-};
+}
 
 //=============================== Iteration step ======================================
 // ***************************************************************************************
@@ -329,7 +332,7 @@ void ColoredGaussSeidelDiffuse::ColoredGaussSeidelStep(Field *out, const Field *
 } //end data region
 
 //#pragma acc wait
-};
+}
 
 //======================== Turbulent version of iteration step ===========================
 // ***************************************************************************************
@@ -493,7 +496,7 @@ void ColoredGaussSeidelDiffuse::ColoredGaussSeidelStep(Field *out, const Field *
     }
 } //end data region
 //#pragma acc wait
-};
+}
 
 //=================================== CGS stencil ========================================
 // ***************************************************************************************
@@ -531,4 +534,4 @@ void ColoredGaussSeidelDiffuse::ColoredGaussSeidelStencil(size_t i, size_t j, si
                          + alphaZ * (d_out_z + d_out_z2));
 
     *(out + IX(i, j, k, nx, ny)) = (1 - w) * r_out + w * out_h;
-};
+}
