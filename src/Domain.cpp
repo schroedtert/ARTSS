@@ -16,6 +16,8 @@
 Domain *Domain::single = nullptr; //Singleton
 
 Domain::Domain() {
+    m_logger = Utility::createLogger(typeid(this).name());
+
     auto params = Parameters::getInstance();
     auto solver = params->get("solver/description");
     if ( solver.find("NS") != std::string::npos ||  solver.find("Pressure") != std::string::npos){
@@ -159,10 +161,16 @@ bool Domain::setNewValue(long shift, real startCoord_p, real endCoord_p, real ol
     }
     return update;
 }
-void Domain::print(){
-    std::cout << "-- Domain" << std::endl;
-    std::cout << "\t Domain size inner cells: (" << Getnx()-2 << "|" << Getny()-2 << "|" << Getnz()-2 << ")" << std::endl;
-    std::cout << "\t step size (x|y|z): (" << Getdx() << "|" << Getdy() << "|" << Getdz() << ")" << std::endl;
+void Domain::print() {
+    m_logger->info("-- Domain");
+    m_logger->info("\t Domain size inner cells: (%i|%i|%i) ",
+            Getnx()-2,
+            Getny()-2,
+            Getnz()-2);
+    m_logger->info("\t step size (x|y|z): (%f|%f|%f)",
+            Getdx(),
+            Getdy(),
+            Getdz());
 }
 
 void Domain::printDetails(){

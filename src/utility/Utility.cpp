@@ -92,9 +92,9 @@ std::vector<std::string> Utility::split(const char *text, char delimiter) {
     return tokens;
 }
 
-// ==================== Split string at character ==============================
+// ==================== Returns a new Logger ==============================
 // *****************************************************************************
-/// \brief  Splits a string at a defined char
+/// \brief  Returns a new logger. Creates one if needed.
 /// \param  loggerName  name of logger, represented in log file
 //          make sure you dont call this function twice with the same loggerName
 // *****************************************************************************

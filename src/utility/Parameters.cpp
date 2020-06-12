@@ -1,8 +1,8 @@
-/// \file 		Parameters.h
-/// \brief 		Access parameters of XML file
-/// \date 		May 20, 2016
-/// \author 	Arnold
-/// \copyright 	<2015-2020> Forschungszentrum Juelich GmbH. All rights reserved.
+/// \file       Parameters.h
+/// \brief      Access parameters of XML file
+/// \date       May 20, 2016
+/// \author     Arnold
+/// \copyright  <2015-2020> Forschungszentrum Juelich GmbH. All rights reserved.
 
 #include <vector>
 #include <iostream>
@@ -24,16 +24,25 @@ Parameters *Parameters::getInstance() {
 // ========================================= Parse =======================================
 // ***************************************************************************************
 /// \brief  parses xml file
-/// \param	filename		string (name of xml-file)
+/// \param  filename        string (name of xml-file)
 // ***************************************************************************************
 void Parameters::parse(const std::string& filename) {
     this->doc->LoadFile(filename.c_str());
 }
 
+// ==================================== Parse ==================================
+// *****************************************************************************
+/// \brief  parses xml file
+/// \param  xml_file        *FILE (file object)
+// *****************************************************************************
+void Parameters::parse(FILE *xml_file) {
+    this->doc->LoadFile(xml_file);
+}
+
 // ======================================== Getter =======================================
 // ***************************************************************************************
 /// \brief  gets raw string (from xml-file)
-/// \param	raw_path   tree path (as string) of xml-file
+/// \param  raw_path   tree path (as string) of xml-file
 // ***************************************************************************************
 std::string Parameters::get(const std::string &raw_path) {
     auto path = Utility::split(raw_path, '/');
@@ -57,7 +66,7 @@ std::string Parameters::get(const std::string &raw_path) {
 
 // ***************************************************************************************
 /// \brief  gets real number (from xml-file)
-/// \param	raw_path		tree path (as string) of xml-file
+/// \param  raw_path        tree path (as string) of xml-file
 // ***************************************************************************************
 real Parameters::getReal(const std::string &raw_path) {
     auto raw_result = this->get(raw_path);
@@ -66,7 +75,7 @@ real Parameters::getReal(const std::string &raw_path) {
 
 // ***************************************************************************************
 /// \brief  gets double number (from xml-file)
-/// \param	raw_path		tree path (as string) of xml-file
+/// \param  raw_path        tree path (as string) of xml-file
 // ***************************************************************************************
 double Parameters::getDouble(const std::string &raw_path) {
     auto raw_result = this->get(raw_path);
@@ -75,7 +84,7 @@ double Parameters::getDouble(const std::string &raw_path) {
 
 // ***************************************************************************************
 /// \brief  gets integer number (from xml-file)
-/// \param	raw_path		tree path (as string) of xml-file
+/// \param  raw_path        tree path (as string) of xml-file
 // ***************************************************************************************
 int Parameters::getInt(const std::string &raw_path) {
     auto raw_result = this->get(raw_path);

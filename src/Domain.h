@@ -11,7 +11,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <cmath>
+
+#include "spdlog/spdlog.h"
+
 #include "utility/GlobalMacrosTypes.h"
+#include "utility/Utility.h"
 
 class Domain {
  public:
@@ -141,6 +145,7 @@ class Domain {
     real m_x1, m_x2, m_y1, m_y2, m_z1, m_z2;
     real m_X1, m_X2, m_Y1, m_Y2, m_Z1, m_Z2;
     size_t m_levels = 0;
+    std::shared_ptr<spdlog::logger> m_logger;
 };
 
 #endif //ARTSS_DOMAIN_H
