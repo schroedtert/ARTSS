@@ -15,6 +15,7 @@
 #include "src/advection/ExplicitAdvect.h"
 
 
+// based on Test_NavierStokesTempTurb_OpenPlume
 static char xml_buffer[] =
 "<JuROr>"
     "<physical_parameters>"
@@ -61,12 +62,11 @@ static char xml_buffer[] =
     "<obstacles enabled=\"No\"></obstacles>"
     "<surfaces enabled=\"No\"></surfaces>"
 
-    "<logging file=\"Test_NavierStokesTempTurb_OpenPlume.log\" level=\"error\"/>"
+    "<logging file=\"test.log\" level=\"error\"/>"
 "</JuROr>";
 
 
 TEST(ExplicitAdvect, emptyInput) {
-
     auto xml_file = fmemopen(xml_buffer, sizeof(xml_buffer), "rb");
 
     auto params = Parameters::getInstance();
@@ -86,12 +86,36 @@ TEST(ExplicitAdvect, emptyInput) {
     ExplicitAdvect exp_adv = ExplicitAdvect();
     exp_adv.advect(&out, &in, &u_vel, &v_vel, &w_vel, true);
 
-    for(int i=0; i < nx*ny*nz; i++)
+    for (int i=0; i < nx*ny*nz; i++)
         EXPECT_EQ(0.0, out.data[i]);
 }
 
 TEST(ExplicitAdvect, OneU) {
+    auto xml_file = fmemopen(xml_buffer, sizeof(xml_buffer), "rb");
 
+    auto params = Parameters::getInstance();
+    params->parse(xml_file);
+
+    Field out(RHO, 0.0);
+    Field in(RHO, 0.0);
+    Field u_vel(U, 1.0);
+    Field v_vel(V, 0.0);
+    Field w_vel(W, 0.0);
+
+    // in.data should look like this
+    // 0 0 0 0
+    // 0 1 1 0
+    // 0 1 1 0
+    // 0 0 0 0
+    for (int i=1; i < 5; i++)
+        for (int j=1; j < 5; j++)
+            for (int k=1; k < 5; k++)
+                EXPECT_NEAR(out.data[i*36 + j*6 + k],
+                            in.data[i*36 + j*6 + k-1],
+                            1e-9);
+}
+
+TEST(ExplicitAdvect, MinusOneU) {
     auto xml_file = fmemopen(xml_buffer, sizeof(xml_buffer), "rb");
 
     auto params = Parameters::getInstance();
@@ -104,17 +128,70 @@ TEST(ExplicitAdvect, OneU) {
 
     Field out(RHO, 0.0);
     Field in(RHO, 0.0);
-    Field u_vel(U, 1.0);
+    Field u_vel(U, -1.0);
     Field v_vel(V, 0.0);
     Field w_vel(W, 0.0);
 
-    // in.data should look like this
-    // 0 0 0 0 
-    // 0 1 1 0 
-    // 0 1 1 0 
+    for (int i=1; i < 5; i++) {
+        for (int j=2; j < 4; j++) {
+            in.data[i*36 + j*6 + 2] = 1.0;
+            in.data[i*36 + j*6 + 3] = 1.0;
+        }
+    }
+
+    // for (int i=1; i < 5; i++) {
+    //     for (int j=1; j < 5; j++)
+    //         std::cout << in.data[36 + 6*i + j] << " ";
+    //     std::cout << std::endl;
+    // }
+
+    ExplicitAdvect exp_adv = ExplicitAdvect();
+    exp_adv.advect(&out, &in, &u_vel, &v_vel, &w_vel, true);
+
+    // out.data should look like this
     // 0 0 0 0
+    // 1 1 0 0
+    // 1 1 0 0
+    // 0 0 0 0
+    for (int i=1; i < 5; i++)
+        for (int j=1; j < 5; j++)
+            for (int k=1; k < 5; k++)
+                EXPECT_NEAR(out.data[i*36 + j*6 + k+1],
+                            in.data[i*36 + j*6 + k+1],
+                            1e-9);
+
+    for(int i=1; i<nx*ny*nz; i++) {
+        if(in.data[i] != out.data[i])
+            std::cout << i << ": " << out.data[i] << std::endl;
+    }
+    
     for (int i=1; i<5; i++) {
-        for (int j=2; j<4; j++) {
+        for (int j=1; j<5; j++)
+            std::cout << out.data[36 + 6*i + j] << " ";
+        std::cout << std::endl;
+    }
+}
+
+
+TEST(ExplicitAdvect, OneV) {
+    auto xml_file = fmemopen(xml_buffer, sizeof(xml_buffer), "rb");
+
+    auto params = Parameters::getInstance();
+    params->parse(xml_file);
+
+    Field out(RHO, 0.0);
+    Field in(RHO, 0.0);
+    Field u_vel(U, 0.0);
+    Field v_vel(V, 1.0);
+    Field w_vel(W, 0.0);
+
+    // in.data should look like this
+    // 0 0 0 0
+    // 0 1 1 0
+    // 0 1 1 0
+    // 0 0 0 0
+    for (int i=1; i < 5; i++) {
+        for (int j=2; j < 4; j++) {
             in.data[i*36 + j*6 + 2] = 1.0;
             in.data[i*36 + j*6 + 3] = 1.0;
         }
@@ -125,21 +202,85 @@ TEST(ExplicitAdvect, OneU) {
     exp_adv.advect(&out, &in, &u_vel, &v_vel, &w_vel, true);
 
     // out.data should look like this
-    // 0 0 0 0 
-    // 0 0 1 1 
-    // 0 0 1 1 
-    // 0 0 0 0 
-    for (int i=1; i<5; i++) {
-        for (int j=2; j<4; j++) {
-            // Expecting a schift by one to resp. to in
-            EXPECT_NEAR(out.data[i*36 + j*6 + 3], 1.0, 1E-9);
-            EXPECT_NEAR(out.data[i*36 + j*6 + 4], 1.0, 1E-9);
-        }
-    }
+    // 0 0 0 0
+    // 0 0 0 0
+    // 0 1 1 0
+    // 0 1 1 0
+    for (int i=1; i < 5; i++)
+        for (int j=1; j < 5; j++)
+            for (int k=1; k < 5; k++)
+                EXPECT_NEAR(out.data[i*36 + j*6 + k],
+                            in.data[i*36 + (j-1)*6 + k],
+                            1e-9);
 }
 
-TEST(ExplicitAdvect, MinusOneU) {
+TEST(ExplicitAdvect, MinusOneV) {
+    auto xml_file = fmemopen(xml_buffer, sizeof(xml_buffer), "rb");
 
+    auto params = Parameters::getInstance();
+    params->parse(xml_file);
+
+    Field out(RHO, 0.0);
+    Field in(RHO, 0.0);
+    Field u_vel(U, 0.0);
+    Field v_vel(V, -1.0);
+    Field w_vel(W, 0.0);
+
+    for (int i=1; i < 5; i++) {
+        for (int j=2; j < 4; j++) {
+            in.data[i*36 + j*6 + 2] = 1.0;
+            in.data[i*36 + j*6 + 3] = 1.0;
+        }
+    }
+
+    ExplicitAdvect exp_adv = ExplicitAdvect();
+    exp_adv.advect(&out, &in, &u_vel, &v_vel, &w_vel, true);
+
+    // out.data should look like this
+    // 0 1 1 0
+    // 0 1 1 0
+    // 0 0 0 0
+    // 0 0 0 0
+    for (int i=1; i < 5; i++)
+        for (int j=1; j < 5; j++)
+            for (int k=1; k < 5; k++)
+                EXPECT_NEAR(out.data[i*36 + j*6 + k],
+                            in.data[i*36 + (j+1)*6 + k],
+                            1e-9);
+}
+
+
+TEST(ExplicitAdvect, OneW) {
+    auto xml_file = fmemopen(xml_buffer, sizeof(xml_buffer), "rb");
+
+    auto params = Parameters::getInstance();
+    params->parse(xml_file);
+
+    Field out(RHO, 0.0);
+    Field in(RHO, 0.0);
+    Field u_vel(U, 0.0);
+    Field v_vel(V, 0.0);
+    Field w_vel(W, 1.0);
+
+    for (int i=2; i < 4; i++) {
+        for (int j=1; j < 5; j++) {
+            in.data[i*36 + j*6 + 2] = 1.0;
+            in.data[i*36 + j*6 + 3] = 1.0;
+        }
+    }
+
+    ExplicitAdvect exp_adv = ExplicitAdvect();
+    exp_adv.advect(&out, &in, &u_vel, &v_vel, &w_vel, true);
+
+    for (int i=2; i < 6; i++)
+        for (int j=0; j < 6; j++)
+            for (int k=0; k < 6; k++)
+                EXPECT_NEAR(out.data[i*36 + j*6 + k],
+                            in.data[(i-1)*36 + j*6 + k],
+                            1e-9);
+}
+
+TEST(ExplicitAdvect, MinusOneW) {
     auto xml_file = fmemopen(xml_buffer, sizeof(xml_buffer), "rb");
 
     auto params = Parameters::getInstance();
@@ -151,32 +292,24 @@ TEST(ExplicitAdvect, MinusOneU) {
     const int nz = static_cast<int>(domain->Getnz(0));
 
     Field out(RHO, 0.0);
-    Field out2(RHO, 0.0);
     Field in(RHO, 0.0);
-    Field u_vel(U, -1.0);
+    Field u_vel(U, 0.0);
     Field v_vel(V, 0.0);
-    Field w_vel(W, 0.0);
+    Field w_vel(W, -1.0);
 
-    for(int i=1; i<5; i++) {
-        for(int j=2; j<4; j++) {
+    for (int i=1; i < 5; i++) {
+        for (int j=2; j < 4; j++) {
             in.data[i*36 + j*6 + 2] = 1.0;
             in.data[i*36 + j*6 + 3] = 1.0;
         }
     }
 
-
     ExplicitAdvect exp_adv = ExplicitAdvect();
     exp_adv.advect(&out, &in, &u_vel, &v_vel, &w_vel, true);
-    exp_adv.advect(&out2, &out, &u_vel, &v_vel, &w_vel, true);
-
-    for(int i=1; i<nx*ny*nz; i++) {
-        if(in.data[i] != out.data[i])
-            std::cout << i << ": " << out.data[i] << std::endl;
-    }
-
-    for (int i=1; i<5; i++) {
-        for (int j=1; j<5; j++)
-            std::cout << out2.data[36 + 6*i + j] << " ";
-        std::cout << std::endl;
-    }
+    for (int i=2; i < 6; i++)
+        for (int j=0; j < 6; j++)
+            for (int k=0; k < 6; k++)
+                EXPECT_NEAR(out.data[i*36 + j*6 + k],
+                            in.data[(i+1)*36 + j*6 + k],
+                            1e-9);
 }
