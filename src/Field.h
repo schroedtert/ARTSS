@@ -8,6 +8,7 @@
 #define ARTSS_FIELD_H_
 
 #include <array>
+#include <cstddef>
 #include "utility/GlobalMacrosTypes.h"
 class Adaption;
 

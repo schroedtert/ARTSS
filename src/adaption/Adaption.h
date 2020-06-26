@@ -12,6 +12,8 @@
 #include "../interfaces/IAdaptionFunction.h"
 #include "../utility/GlobalMacrosTypes.h"
 
+#include <string>
+
 /* enum for different types of dynamic adaption:
  * NO = adaption impossible/no changes
  * UNKNOWN = adaption is possible but not determined
